@@ -3,8 +3,8 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-    
-  };
+  
+};
 
 // Inicializa o Firebase
 const app = initializeApp(firebaseConfig);

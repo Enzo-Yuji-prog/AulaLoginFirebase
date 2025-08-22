@@ -1,11 +1,28 @@
 // import { auth } from '../firebase/config.js';
 import { useState } from 'react';
 import { auth } from '../firebase/config';
-import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword } from 'firebase/auth'
+import { signInWithPopup, GoogleAuthProvider, sendPasswordResetEmail } from 'firebase/auth';
 
 function LoginPage() {
     const [loginType, setLoginType] = useState('login');
     const [userCredentials, setUserCredentials] = useState({})
+    const [error, setError] = useState('')
+    const dict_errors = {
+        "auth/weak-password": "A senha é muito fraca. Exija pelo menos 6 caracteres, incluindo números e letras.",
+        "auth/invalid-email": "O endereço de e-mail é inválido.",
+        "auth/user-not-found": "Não foi encontrada nenhuma conta com este e-mail ou número de telefone.",
+        "auth/wrong-password": "A senha está incorreta.",
+        "auth/email-already-in-use": "O endereço de e-mail já está sendo usado por outra conta.",
+        "auth/operation-not-allowed": "Esta operação não é permitida para este projeto.",
+        "auth/user-disabled": "Esta conta de usuário foi desativada.",
+        "auth/too-many-requests": "Muitas tentativas de login. Tente novamente mais tarde.",
+        "auth/invalid-api-key": "A chave da API fornecida é inválida.",
+        "auth/requires-recent-login": "É necessário fazer login recentemente para realizar esta ação.",
+        "auth/invalid-credential" : "E-mail ou senha Inválida",
+        "auth/missing-password": "Senha inválida"
+        // Adicione mais erros aqui conforme necessário
+    }
 
     console.log(auth)
 
@@ -15,26 +32,27 @@ function LoginPage() {
 
     function handleCriarConta(e) {
         e.preventDefault()
+        setError('')
 
         createUserWithEmailAndPassword(auth, userCredentials.email, userCredentials.password)
         .then((userCredential) => {
             // Signed up 
             const user = userCredential.user;
             console.log(user);
-            console.log('Sucesso')
+            // console.log('Cadastro efetuado com sucesso')
+            setError('')
             // ...
         })
         .catch((error) => {
             // const errorCode = error.code;
-            const errorMessage = error.message;
-            console.log(errorMessage);
-            console.log('Erro');
+            setError( dict_errors[error.code] || error.message)
             // ..
         });
     }
 
     function handleEntrarConta(e) {
         e.preventDefault()
+        setError('')
 
         const auth = getAuth();
         signInWithEmailAndPassword(auth, userCredentials.email, userCredentials.password)
@@ -42,15 +60,38 @@ function LoginPage() {
             // Signed in 
             const user = userCredential.user;
             console.log(user);
-            console.log('Sucesso');
+            // alert(`Login efetuado com sucesso. Usuáio: ${user.email}`);
+            setError('')
             // ...
         })
         .catch((error) => {
             // const errorCode = error.code;
-            const errorMessage = error.message;
-            console.log(errorMessage);
-            console.log('Erro');
+            setError( dict_errors[error.code] || error.message)
         });
+    }
+
+    const handleGoogleLogin = async(e) => {
+        e.preventDefault();
+        setError('')
+
+        try {
+            const provider = new GoogleAuthProvider()
+            const result = await signInWithPopup(auth, provider)
+
+            const user = result.user
+            console.log ('Google login ok', user)
+            // alert(`Login com google efetuado com sucesso! usuário: ${user.email}`)
+            setError('')
+
+        } catch (error) {
+            //const errorCode = error.code;
+            setError( dict_errors[error.code] || error.message)
+        }
+    }
+
+    function handlePasswordReset() {
+        const email = prompt('Informe seu Email:')
+        sendPasswordResetEmail(auth, email)
     }
 
     return (
@@ -86,8 +127,11 @@ function LoginPage() {
                             : 
                             <button onClick={(e)=>{handleCriarConta(e)}} className="active btn btn-block">Criar Conta</button>
                         }
-                        <button className="active btn btn-block">Login com Google</button>
-                        <p className="forgot-password">Esqueci minha senha.</p>
+                        <button onClick={(e) => {handleGoogleLogin(e)}} className="active btn btn-block">Login com Google</button>
+                        
+                        {<div className='error'>{error}</div>}
+                        
+                        <p className="forgot-password" onClick={handlePasswordReset}>Esqueci minha senha.</p>
                     </form>
                 </section>
             </div>
