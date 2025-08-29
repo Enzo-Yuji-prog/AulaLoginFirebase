@@ -1,7 +1,11 @@
 import { auth } from '../firebase/config';
 import { useAuth } from '../contexts/AuthContext'; // Importe o hook useAuth
+import Header from '../components/Header';
 
 function MainPage() {
+
+  const pageTitle = "Página inicial";
+
   const { user } = useAuth(); // Acesse o objeto user do contexto
 
   const handleSignOut = () => {
@@ -13,12 +17,14 @@ function MainPage() {
   }
 
   return (
-    <div>
-      <h1>Página Principal</h1>
-      {user.displayName && <p>Nome: {user.displayName}</p>}
-      {user.photoURL && <img src={user.photoURL} alt="Foto do usuário" />} <br />
-      <button onClick={handleSignOut}>Logout</button>
-    </div>
+    <>
+      <Header pageTitle={pageTitle} />
+      <div>
+        <h1>Seja bem vindo ao meu site com REACT</h1>
+        {user.displayName && <p>Nome: {user.displayName}</p>}
+        {user.photoURL && <img src={user.photoURL} alt="Foto do usuário" />}
+      </div>
+    </>
   );
 }
 
